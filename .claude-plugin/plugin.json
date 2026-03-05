@@ -1,0 +1,57 @@
+{
+  "name": "mon-assistant-audio",
+  "version": "1.0.0",
+  "description": "Assistant audio pour Claude Code avec analyse automatique des dépendances et notifications sonores",
+  "author": "Votre Nom",
+  "license": "MIT",
+  "claude": {
+    "minVersion": "1.0.0"
+  },
+  "capabilities": {
+    "skills": [
+      {
+        "id": "analyze-deps",
+        "name": "Analyze Dependencies",
+        "description": "Analyse automatiquement les dépendances du projet et documente leur utilisation via les MCPs disponibles"
+      }
+    ],
+    "hooks": [
+      {
+        "event": "Notification",
+        "matcher": "permission_prompt|elicitation_dialog",
+        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/play-interaction-sound.sh"
+      },
+      {
+        "event": "Stop",
+        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/play-task-complete-sound.sh"
+      },
+      {
+        "event": "SessionStart",
+        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start-analyze.sh"
+      }
+    ]
+  },
+  "mcp": {
+    "required": [],
+    "optional": [
+      "browseros",
+      "context7",
+      "nuxt-remote",
+      "nuxt-ui-remote",
+      "searxng",
+      "laravel-boost"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/votre-username/mon-assistant-audio.git"
+  },
+  "homepage": "https://github.com/votre-username/mon-assistant-audio#readme",
+  "keywords": [
+    "audio",
+    "dependencies",
+    "analysis",
+    "notifications",
+    "mcp"
+  ]
+}

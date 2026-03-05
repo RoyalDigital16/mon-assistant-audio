@@ -1,7 +1,6 @@
 #!/bin/bash
-# Hook: Notification
+# Hook: PermissionRequest
 # Joue un son quand Claude a besoin d'une interaction utilisateur
-# Matcher: permission_prompt|elicitation_dialog
 
 set -euo pipefail
 

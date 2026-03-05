@@ -32,7 +32,7 @@ Le skill `analyze-deps` :
 
 ```bash
 # Clonez le repository
-git clone https://github.com/votre-username/mon-assistant-audio.git
+git clone https://github.com/RoyalDigital16/mon-assistant-audio.git
 cd mon-assistant-audio
 
 # Utilisez le plugin avec --plugin-dir
@@ -258,7 +258,7 @@ Les contributions sont les bienvenues ! N'hésitez pas à :
 
 Pour les bugs ou suggestions, ouvrez une issue sur GitHub :
 
-https://github.com/votre-username/mon-assistant-audio/issues
+https://github.com/RoyalDigital16/mon-assistant-audio/issues
 
 ## Changelog
 

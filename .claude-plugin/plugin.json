@@ -2,7 +2,7 @@
   "name": "mon-assistant-audio",
   "version": "1.0.0",
   "description": "Assistant audio pour Claude Code avec analyse automatique des dépendances et notifications sonores",
-  "author": "Votre Nom",
+  "author": "RoyalDigital16",
   "license": "MIT",
   "claude": {
     "minVersion": "1.0.0"
@@ -44,9 +44,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/votre-username/mon-assistant-audio.git"
+    "url": "https://github.com/RoyalDigital16/mon-assistant-audio.git"
   },
-  "homepage": "https://github.com/votre-username/mon-assistant-audio#readme",
+  "homepage": "https://github.com/RoyalDigital16/mon-assistant-audio#readme",
   "keywords": [
     "audio",
     "dependencies",

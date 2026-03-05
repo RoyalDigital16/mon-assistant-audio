@@ -1,0 +1,13 @@
+{
+  "name": "mon-assistant-audio-marketplace",
+  "plugins": [
+    {
+      "name": "mon-assistant-audio",
+      "description": "Assistant audio pour Claude Code avec analyse automatique des dépendances et notifications sonores",
+      "source": {
+        "source": "github",
+        "repo": "RoyalDigital16/mon-assistant-audio"
+      }
+    }
+  ]
+}

@@ -28,7 +28,19 @@ Le skill `analyze-deps` :
 
 ## Installation
 
-### Méthode 1: Installation locale (recommandée pour le développement)
+### Méthode 1: Via le marketplace (recommandé)
+
+```bash
+# Installation pour l'utilisateur actuel (tous les projets)
+claude plugin install mon-assistant-audio@royaldigital16
+
+# Ou avec l'interface interactive
+/plugin
+# Allez dans l'onglet "Discover", cherchez "mon-assistant-audio"
+# Sélectionnez la portée (User/Project/Local)
+```
+
+### Méthode 2: Installation locale (développement)
 
 ```bash
 # Clonez le repository
@@ -39,18 +51,14 @@ cd mon-assistant-audio
 claude --plugin-dir /chemin/vers/mon-assistant-audio
 ```
 
-### Méthode 2: Installation globale
+### Méthode 3: Ajouter comme marketplace locale
 
 ```bash
-# Copiez le plugin dans le dossier des plugins Claude
-cp -r mon-assistant-audio ~/.claude/plugins/
-```
+# Ajouter votre repository local comme marketplace
+/plugin marketplace add /chemin/vers/mon-assistant-audio
 
-### Méthode 3: Installation via le marketplace
-
-```bash
-# (Quand le plugin sera publié sur le marketplace)
-claude plugin install mon-assistant-audio
+# Installer depuis la marketplace locale
+/plugin install mon-assistant-audio
 ```
 
 ## Utilisation
@@ -59,9 +67,13 @@ claude plugin install mon-assistant-audio
 
 L'analyse des dépendances se lance automatiquement au début de chaque session si un `package.json` ou `composer.json` est détecté.
 
-### Appel manuel
+### Appel manuel du skill
 
 ```bash
+# Syntaxe complète avec le préfixe du plugin
+/mon-assistant-audio:analyze-deps
+
+# Ou simplement (si pas de conflit de noms)
 /analyze-deps
 ```
 
@@ -113,25 +125,45 @@ ffmpeg -f lavfi -i "sine=frequency=800:duration=0.1" \
 
 ### Désactiver les sons
 
-Si vous ne voulez pas de notifications sonores, commentez les hooks dans `.claude-plugin/plugin.json` :
+Pour désactiver les notifications sonores, éditez `hooks/hooks.json` et commentez les hooks `Stop` et `PermissionRequest` :
 
 ```json
 {
-  "capabilities": {
-    "hooks": [
-      // {
-      //   "event": "Notification",
-      //   "matcher": "permission_prompt|elicitation_dialog",
-      //   "command": "${CLAUDE_PLUGIN_ROOT}/hooks/play-interaction-sound.sh"
-      // },
-      // {
-      //   "event": "Stop",
-      //   "command": "${CLAUDE_PLUGIN_ROOT}/hooks/play-task-complete-sound.sh"
-      // },
+  "hooks": {
+    "SessionStart": [
       {
-        "event": "SessionStart",
-        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start-analyze.sh"
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start-analyze.sh"
+          }
+        ]
       }
+    ],
+    "Stop": [
+      // Commenté pour désactiver
+      // {
+      //   "matcher": ".*",
+      //   "hooks": [
+      //     {
+      //       "type": "command",
+      //       "command": "${CLAUDE_PLUGIN_ROOT}/hooks/play-task-complete-sound.sh"
+      //     }
+      //   ]
+      // }
+    ],
+    "PermissionRequest": [
+      // Commenté pour désactiver
+      // {
+      //   "matcher": ".*",
+      //   "hooks": [
+      //     {
+      //       "type": "command",
+      //       "command": "${CLAUDE_PLUGIN_ROOT}/hooks/play-interaction-sound.sh"
+      //     }
+      //   ]
+      // }
     ]
   }
 }
@@ -139,7 +171,7 @@ Si vous ne voulez pas de notifications sonores, commentez les hooks dans `.claud
 
 ### Désactiver l'analyse automatique
 
-Pour désactiver l'analyse au démarrage de session, commentez le hook `SessionStart`.
+Pour désactiver l'analyse au démarrage de session, commentez le hook `SessionStart` dans `hooks/hooks.json`.
 
 ### Installation des règles MCP globales
 
@@ -192,15 +224,16 @@ Aucune installation requise, le plugin utilise ce qui est disponible.
 ```
 mon-assistant-audio/
 ├── .claude-plugin/
-│   └── plugin.json              # Manifeste du plugin
+│   └── plugin.json              # Métadonnées du plugin
+├── hooks/
+│   ├── hooks.json               # Configuration des hooks
+│   ├── play-interaction-sound.sh
+│   ├── play-task-complete-sound.sh
+│   └── session-start-analyze.sh
 ├── skills/
 │   └── analyze-deps/
 │       ├── SKILL.md             # Documentation du skill
 │       └── analyze.sh           # Script d'analyse
-├── hooks/
-│   ├── play-interaction-sound.sh
-│   ├── play-task-complete-sound.sh
-│   └── session-start-analyze.sh
 ├── audio/
 │   ├── interaction-needed.wav   # Son pour interaction requise
 │   └── task-complete.wav        # Son pour tâche terminée
@@ -209,6 +242,16 @@ mon-assistant-audio/
 └── README.md                    # Ce fichier
 ```
 
+## Événements de hooks
+
+Le plugin utilise les événements Claude Code suivants :
+
+| Événement | Description | Hook |
+|-----------|-------------|------|
+| `SessionStart` | Déclenché au début de chaque session | Analyse des dépendances |
+| `Stop` | Déclenché quand Claude a fini de répondre | Son de fin de tâche |
+| `PermissionRequest` | Déclenché quand une permission est demandée | Son d'interaction |
+
 ## Développement
 
 ### Rendre les scripts exécutables
@@ -216,29 +259,62 @@ mon-assistant-audio/
 ```bash
 chmod +x skills/analyze-deps/analyze.sh
 chmod +x hooks/*.sh
+chmod +x install-claude-md-rules.sh
 ```
 
 ### Tester localement
 
 ```bash
-# Test du plugin
-claude --plugin-dir . --test
+# Test du plugin avec plugin-dir
+claude --plugin-dir .
 
 # Test d'un hook
-./hooks/play-interaction-sound.sh
+CLAUDE_PLUGIN_ROOT=$(pwd) ./hooks/play-interaction-sound.sh
 
 # Test de l'analyse
-./skills/analyze-deps/analyze.sh
+CLAUDE_PLUGIN_ROOT=$(pwd) PROJECT_ROOT=$(pwd) ./skills/analyze-deps/analyze.sh
 ```
 
-## Publication
+### Vérifier la conformité
 
-### Pour publier sur le marketplace
+```bash
+# Vérifier la structure du plugin
+cat .claude-plugin/plugin.json
+cat hooks/hooks.json
+
+# Vérifier que le skill est reconnu
+/plugin
+# Aller dans l'onglet "Installed"
+```
+
+## Publication sur marketplace
+
+### Créer un marketplace.json
+
+Pour distribuer ce plugin via un marketplace, créez un fichier `.claude-plugin/marketplace.json` :
+
+```json
+{
+  "name": "mon-assistant-audio-marketplace",
+  "plugins": [
+    {
+      "name": "mon-assistant-audio",
+      "source": {
+        "source": "github",
+        "repo": "RoyalDigital16/mon-assistant-audio"
+      }
+    }
+  ]
+}
+```
+
+### Soumettre à la marketplace officielle
 
 1. Assurez-vous que le repository est public sur GitHub
 2. Vérifiez que `plugin.json` contient les bonnes informations
-3. Soumettez le plugin au marketplace Claude Code
-4. Attendez la validation
+3. Soumettez via :
+   - **Claude.ai** : https://claude.ai/settings/plugins/submit
+   - **Console** : https://platform.claude.com/plugins/submit
 
 ## Licence
 
@@ -261,6 +337,13 @@ Pour les bugs ou suggestions, ouvrez une issue sur GitHub :
 https://github.com/RoyalDigital16/mon-assistant-audio/issues
 
 ## Changelog
+
+### Version 1.1.0 (2026-03-05)
+
+- ✅ Conformité avec les spécifications Claude Code v2.1.69
+- ✅ Restructuration de `plugin.json` (métadonnées uniquement)
+- ✅ Création de `hooks/hooks.json` avec le format correct
+- ✅ Événement `Notification` renommé en `PermissionRequest`
 
 ### Version 1.0.0 (2025-01-05)
 
